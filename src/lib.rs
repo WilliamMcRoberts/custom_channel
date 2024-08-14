@@ -44,6 +44,8 @@ impl<T> Receiver<T> {
         loop {
             match inner.queue.pop_front() {
                 Some(t) => {
+                    // If items are available, we swap with buffer for
+                    // performance boost
                     std::mem::swap(&mut self.buffer, &mut inner.queue);
                     return Some(t);
                 }
