@@ -134,6 +134,44 @@ mod tests {
 
     use super::*;
 
+    pub struct Dog {
+        name: String,
+        age: i32,
+    }
+
+    #[test]
+    fn send_object_across_threads() {
+        let (tx, mut rx) = channel();
+        let tx2 = tx.clone();
+
+        let dog = Dog {
+            name: "Wilbur".to_owned(),
+            age: 33,
+        };
+
+        let dog_two = Dog {
+            name: "Jack".to_owned(),
+            age: 35,
+        };
+
+        thread::spawn(move || {
+            tx.send(dog);
+        });
+
+        thread::spawn(move || {
+            tx2.send(dog_two);
+        });
+
+        let d = rx.next().unwrap();
+        let d_two = rx.next().unwrap();
+
+        assert_eq!(d.name, "Wilbur".to_owned());
+        assert_eq!(d_two.name, "Jack".to_owned());
+
+        assert_eq!(d.age, 33);
+        assert_eq!(d_two.age, 35);
+    }
+
     #[test]
     fn send_string_across_threads() {
         let (tx, mut rx) = channel();
